@@ -77,11 +77,8 @@ export const loginUserV2 = async (email: string, passwordInput: string) => {
     throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" };
   }
 
-  // Cek dan hapus session lama jika ada (Single Active Session)
-  const existingSessions = await db.select().from(sessions).where(eq(sessions.userId, user.id));
-  if (existingSessions.length > 0) {
-    await db.delete(sessions).where(eq(sessions.userId, user.id));
-  }
+  // Hapus session lama jika ada (Single Active Session)
+  await db.delete(sessions).where(eq(sessions.userId, user.id));
 
   const token = crypto.randomUUID();
 

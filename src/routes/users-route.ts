@@ -140,7 +140,6 @@ export const currentUserRoute = new Elysia({ prefix: "/api/v1/users" })
     "/current",
     async ({ headers, set }) => {
       try {
-        console.log(headers);
         const authHeader = headers["authorization"];
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           set.status = 401;
