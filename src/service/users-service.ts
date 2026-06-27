@@ -1,0 +1,65 @@
+import { db } from "../db";
+import { users } from "../db/schema";
+import { eq } from "drizzle-orm";
+
+export const registerUser = async (name: string, email: string, passwordInput: string) => {
+  // Check if email already exists
+  const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  
+  if (existingUser.length > 0) {
+    throw { code: 400, error: "EMAIL_ALREADY_EXISTS", message: "User already exists" };
+  }
+
+  // Hash password
+  const hashedPassword = await Bun.password.hash(passwordInput, { algorithm: "bcrypt" });
+
+  // Insert new user
+  const result = await db.insert(users).values({
+    name,
+    email,
+    password: hashedPassword,
+  });
+
+  // Get the inserted user to return
+  const insertedUser = await db.select().from(users).where(eq(users.id, result[0].insertId)).limit(1);
+
+  if (insertedUser.length === 0) {
+    throw new Error("Failed to retrieve the inserted user");
+  }
+
+  const { password, ...userWithoutPassword } = insertedUser[0];
+  return userWithoutPassword;
+};
+
+export const loginUser = async (email: string, passwordInput: string) => {
+  // Find user by email
+  const userList = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  
+  if (userList.length === 0) {
+    throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" };
+  }
+
+  const user = userList[0];
+
+  // Verify password
+  const isPasswordValid = await Bun.password.verify(passwordInput, user.password);
+  
+  if (!isPasswordValid) {
+    throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" }; // Or a specific 401 Unauthorized
+  }
+
+  const { password, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+};
+
+export const logoutUser = async (userId: number) => {
+  // In a real application, you might invalidate a session or token here.
+  // We'll verify the user exists to meet the issue's requirements.
+  const userList = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  
+  if (userList.length === 0) {
+    throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" };
+  }
+
+  return true;
+};
