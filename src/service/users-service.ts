@@ -77,6 +77,9 @@ export const loginUserV2 = async (email: string, passwordInput: string) => {
     throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" };
   }
 
+  // Hapus session lama jika ada (Single Active Session)
+  await db.delete(sessions).where(eq(sessions.userId, user.id));
+
   const token = crypto.randomUUID();
 
   await db.insert(sessions).values({
@@ -116,8 +119,9 @@ export const logoutSession = async (token: string) => {
     throw { code: 401, error: "Unauthorized" };
   }
 
-  // 2. Hapus token dari tabel sessions
-  await db.delete(sessions).where(eq(sessions.token, token));
+  // 2. Hapus semua token dari tabel sessions milik user tersebut (Logout All Sessions)
+  const session = sessionList[0];
+  await db.delete(sessions).where(eq(sessions.userId, session.userId));
   return true;
 };
 
