@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { registerUser, loginUser, logoutUser, loginUserV2, getCurrentUser } from "../service/users-service";
+import { registerUser, loginUser, logoutUser, loginUserV2, getCurrentUser, logoutSession } from "../service/users-service";
 
 export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
   .post(
@@ -75,7 +75,34 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
       set.status = 500;
       return { message: "Internal server error" };
     }
-  });
+  })
+  .delete(
+    "/logout",
+    async ({ headers, set }) => {
+      try {
+        const authHeader = headers["authorization"];
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+
+        const token = authHeader.split(" ")[1];
+        await logoutSession(token);
+
+        set.status = 200;
+        return {
+          data: "OK",
+        };
+      } catch (error: any) {
+        if (error.code === 401) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
+        set.status = 500;
+        return { error: "Internal server error" };
+      }
+    }
+  );
 
 export const usersRouteV2 = new Elysia({ prefix: "/api/v2/auth" })
   .post(
