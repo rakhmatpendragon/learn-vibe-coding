@@ -86,7 +86,11 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
           return { error: "Unauthorized" };
         }
 
-        const token = authHeader.split(" ")[1];
+        const token = authHeader.substring(7).trim();
+        if (!token) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
         await logoutSession(token);
 
         set.status = 200;
@@ -146,7 +150,11 @@ export const currentUserRoute = new Elysia({ prefix: "/api/v1/users" })
           return { error: "Unauthorized" };
         }
 
-        const token = authHeader.split(" ")[1];
+        const token = authHeader.substring(7).trim();
+        if (!token) {
+          set.status = 401;
+          return { error: "Unauthorized" };
+        }
         const user = await getCurrentUser(token);
 
         set.status = 200;
