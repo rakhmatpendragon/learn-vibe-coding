@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { registerUser, loginUser, logoutUser } from "../service/users-service";
+import { registerUser, loginUser, logoutUser, loginUserV2 } from "../service/users-service";
 
 export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
   .post(
@@ -76,3 +76,34 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
       return { message: "Internal server error" };
     }
   });
+
+export const usersRouteV2 = new Elysia({ prefix: "/api/v2/auth" })
+  .post(
+    "/login",
+    async ({ body, set }) => {
+      try {
+        const token = await loginUserV2(body.email, body.password);
+        set.status = 200;
+        return {
+          data: token,
+        };
+      } catch (error: any) {
+        if (error.code === 404 && error.error === "USER_NOT_FOUND") {
+          set.status = 404;
+          return {
+            message: error.message,
+            error: error.error,
+            code: 404,
+          };
+        }
+        set.status = 500;
+        return { message: "Internal server error" };
+      }
+    },
+    {
+      body: t.Object({
+        email: t.String({ format: "email" }),
+        password: t.String(),
+      }),
+    }
+  );

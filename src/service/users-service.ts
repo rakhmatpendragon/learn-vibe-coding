@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users } from "../db/schema";
+import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export const registerUser = async (name: string, email: string, passwordInput: string) => {
@@ -62,4 +62,27 @@ export const logoutUser = async (userId: number) => {
   }
 
   return true;
+};
+
+export const loginUserV2 = async (email: string, passwordInput: string) => {
+  const userList = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (userList.length === 0) {
+    throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" };
+  }
+
+  const user = userList[0];
+  const isPasswordValid = await Bun.password.verify(passwordInput, user.password);
+  
+  if (!isPasswordValid) {
+    throw { code: 404, error: "USER_NOT_FOUND", message: "User not found" };
+  }
+
+  const token = crypto.randomUUID();
+
+  await db.insert(sessions).values({
+    token,
+    userId: user.id,
+  });
+
+  return token;
 };
