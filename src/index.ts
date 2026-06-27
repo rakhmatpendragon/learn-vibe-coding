@@ -1,11 +1,12 @@
 import { Elysia } from "elysia";
 import { db } from "./db";
 import { users } from "./db/schema";
-import { usersRoute, usersRouteV2 } from "./routes/users-route";
+import { usersRoute, usersRouteV2, currentUserRoute } from "./routes/users-route";
 
 const app = new Elysia()
   .use(usersRoute)
   .use(usersRouteV2)
+  .use(currentUserRoute)
   .get("/", () => "Welcome to Bun Elysia API")
   .get("/health", () => {
     return {
