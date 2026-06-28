@@ -91,25 +91,24 @@ export const loginUserV2 = async (email: string, passwordInput: string) => {
 };
 
 export const getCurrentUser = async (token: string) => {
-  // 1. Cari token di tabel sessions
-  const sessionList = await db.select().from(sessions).where(eq(sessions.token, token)).limit(1);
-  if (sessionList.length === 0) {
+  const result = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(eq(sessions.token, token))
+    .limit(1);
+
+  if (result.length === 0) {
     throw { code: 401, error: "Unauthorized" };
   }
 
-  const session = sessionList[0];
-
-  // 2. Cari user berdasarkan user_id dari session
-  const userList = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
-  if (userList.length === 0) {
-    throw { code: 401, error: "Unauthorized" };
-  }
-
-  const user = userList[0];
-
-  // 3. Kembalikan data user tanpa password
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  return result[0];
 };
 
 export const logoutSession = async (token: string) => {
