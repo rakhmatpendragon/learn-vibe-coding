@@ -4,6 +4,15 @@ import { users } from "./db/schema";
 import { usersRoute, usersRouteV2, currentUserRoute } from "./routes/users-route";
 
 const app = new Elysia()
+  .onError(({ code, error, set }) => {
+    if (code === 'VALIDATION') {
+      set.status = 400;
+      return {
+        error: "VALIDATION_ERROR",
+        message: error.message,
+      };
+    }
+  })
   .use(usersRoute)
   .use(usersRouteV2)
   .use(currentUserRoute)
