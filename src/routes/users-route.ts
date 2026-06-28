@@ -1,7 +1,27 @@
 import { Elysia, t } from "elysia";
 import { registerUser, loginUser, logoutUser, loginUserV2, getCurrentUser, logoutSession } from "../service/users-service";
 
+export const authPlugin = new Elysia()
+  .derive({ as: "global" }, ({ headers, set }) => {
+    return {
+      getBearerToken: (): string => {
+        const authHeader = headers["authorization"];
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          set.status = 401;
+          throw { code: 401, error: "Unauthorized" };
+        }
+        const token = authHeader.substring(7).trim();
+        if (!token) {
+          set.status = 401;
+          throw { code: 401, error: "Unauthorized" };
+        }
+        return token;
+      }
+    };
+  });
+
 export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
+  .use(authPlugin)
   .post(
     "/register",
     async ({ body, set }) => {
@@ -78,19 +98,9 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
   })
   .delete(
     "/logout",
-    async ({ headers, set }) => {
+    async ({ getBearerToken, set }) => {
       try {
-        const authHeader = headers["authorization"];
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          set.status = 401;
-          return { error: "Unauthorized" };
-        }
-
-        const token = authHeader.substring(7).trim();
-        if (!token) {
-          set.status = 401;
-          return { error: "Unauthorized" };
-        }
+        const token = getBearerToken();
         await logoutSession(token);
 
         set.status = 200;
@@ -140,21 +150,12 @@ export const usersRouteV2 = new Elysia({ prefix: "/api/v2/auth" })
   );
 
 export const currentUserRoute = new Elysia({ prefix: "/api/v1/users" })
+  .use(authPlugin)
   .get(
     "/current",
-    async ({ headers, set }) => {
+    async ({ getBearerToken, set }) => {
       try {
-        const authHeader = headers["authorization"];
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          set.status = 401;
-          return { error: "Unauthorized" };
-        }
-
-        const token = authHeader.substring(7).trim();
-        if (!token) {
-          set.status = 401;
-          return { error: "Unauthorized" };
-        }
+        const token = getBearerToken();
         const user = await getCurrentUser(token);
 
         set.status = 200;
