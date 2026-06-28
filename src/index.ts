@@ -10,6 +10,8 @@ const app = new Elysia()
       return {
         error: "VALIDATION_ERROR",
         message: error.message,
+        code: 400,
+        details: error.all
       };
     }
   })

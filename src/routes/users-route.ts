@@ -88,7 +88,11 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
     },
     {
       body: t.Object({
-        email: t.String({ format: "email", maxLength: 256 }),
+        email: t.String({ 
+          format: "email", 
+          maxLength: 256,
+          error: "Format email tidak valid atau melebihi 256 karakter" 
+        }),
         password: t.String(),
       }),
     }
@@ -153,7 +157,11 @@ export const usersRouteV2 = new Elysia({ prefix: "/api/v2/auth" })
     },
     {
       body: t.Object({
-        email: t.String({ format: "email", maxLength: 256 }),
+        email: t.String({ 
+          format: "email", 
+          maxLength: 256,
+          error: "Format email tidak valid atau melebihi 256 karakter" 
+        }),
         password: t.String(),
       }),
     }
