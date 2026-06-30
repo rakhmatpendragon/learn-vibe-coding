@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "test": "bun test --concurrency 1"
   },
   "dependencies": {
     "elysia": "^1.1.25",
