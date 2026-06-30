@@ -61,6 +61,7 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
           error: "Password minimal 8 karakter"
         }),
       }),
+      detail: { tags: ["Auth V1"] }
     }
   )
   .post(
@@ -95,6 +96,7 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
         }),
         password: t.String(),
       }),
+      detail: { tags: ["Auth V1"] }
     }
   )
   .post("/logout", async ({ set }) => {
@@ -109,7 +111,7 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
       set.status = 500;
       return { message: "Internal server error" };
     }
-  })
+  }, { detail: { tags: ["Auth V1"] } })
   .delete(
     "/logout",
     async ({ getBearerToken, set }) => {
@@ -129,7 +131,8 @@ export const usersRoute = new Elysia({ prefix: "/api/v1/auth" })
         set.status = 500;
         return { error: "Internal server error" };
       }
-    }
+    },
+    { detail: { tags: ["Auth V1"], security: [{ BearerAuth: [] }] } }
   );
 
 export const usersRouteV2 = new Elysia({ prefix: "/api/v2/auth" })
@@ -164,6 +167,7 @@ export const usersRouteV2 = new Elysia({ prefix: "/api/v2/auth" })
         }),
         password: t.String(),
       }),
+      detail: { tags: ["Auth V2"] }
     }
   );
 
@@ -188,5 +192,6 @@ export const currentUserRoute = new Elysia({ prefix: "/api/v1/users" })
         set.status = 500;
         return { error: "Internal server error" };
       }
-    }
+    },
+    { detail: { tags: ["Users V1"], security: [{ BearerAuth: [] }] } }
   );
