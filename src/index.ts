@@ -12,6 +12,15 @@ export const app = new Elysia()
         title: 'API Documentation',
         version: '1.0.0',
         description: 'Dokumentasi API untuk project learn-vibe-coding'
+      },
+      components: {
+        securitySchemes: {
+          BearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          }
+        }
       }
     }
   }))
